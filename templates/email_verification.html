@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Health Connect</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .logo {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-width: 120px;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333333;
+            margin-top: 10px;
+        }
+        .subtitle {
+            font-size: 18px;
+            color: #555555;
+            margin-top: 5px;
+        }
+        .otp-box {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007BFF;
+            margin: 20px 0;
+            padding: 15px 25px;
+            border: 2px dashed #007BFF;
+            display: inline-block;
+            background-color: #eef6ff;
+            letter-spacing: 5px;
+            border-radius: 4px;
+        }
+        .message {
+            font-size: 16px;
+            color: #555555;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .footer {
+            font-size: 12px;
+            color: #777777;
+            margin-top: 30px;
+            line-height: 1.5;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .support-link {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .support-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="https://healthconnect.com/logo.png" alt="Health Connect Logo">
+        </div>
+        <div class="title">Welcome to Health Connect!</div>
+        <p class="subtitle">Your gateway to a healthier lifestyle starts here.</p>
+        
+        <p class="message">Thank you for choosing Health Connect! To ensure the security of your account and access to our services, please verify your email address using the verification code below:</p>
+        
+        <div class="otp-box">{{otp_code}}</div>
+
+        <p class="message">
+            This code will expire in 10 minutes.<br>
+            Enter this code on the verification page to activate your account.
+        </p>
+
+        <p class="footer">
+            If you didn't create an account with Health Connect, please ignore this email.<br>
+            For any assistance, reach out to us at <a class="support-link" href="mailto:support@healthconnect.com">support@healthconnect.com</a><br>
+            © 2024 Health Connect. All rights reserved.
+        </p>
+    </div>
+</body>
+</html> 
