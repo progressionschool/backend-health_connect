@@ -42,8 +42,8 @@ A FastAPI-based backend for Health Connect application that manages doctors, app
 ### Doctors
 - GET `/doctors` - Get all doctors
 - GET `/doctors/{doctor_id}` - Get specific doctor
-- GET `/doctors/deptt` - Get all departments
-- GET `/doctors/deptt/{deptt_name}` - Get doctors by department
+- GET `/doctors/department` - Get all departments
+- GET `/doctors/department/{department_name}` - Get doctors by department
 - POST `/doctors` - Create new doctor
 
 ### Users & Appointments

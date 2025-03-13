@@ -13,11 +13,10 @@ router = APIRouter(
 )
 
 
-@router.get("/deptt/{deptt_name}", response_model=List[DoctorResponse])
+@router.get("/department/{department_name}", response_model=List[DoctorResponse])
 async def get_doctors_by_department(
-    deptt_name: str,
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    department_name: str,
+    db: Session = Depends(get_db)
 ):
     try:
         # First, let's get all doctors to see what we have
@@ -27,13 +26,13 @@ async def get_doctors_by_department(
         matching_doctors = []
         for doctor in all_doctors:
             if doctor.speciality and "title" in doctor.speciality:
-                if doctor.speciality["title"].lower() == deptt_name.lower():
+                if doctor.speciality["title"].lower() == department_name.lower():
                     matching_doctors.append(doctor)
 
         if not matching_doctors:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No doctors found in department: {deptt_name}"
+                detail=f"No doctors found in department: {department_name}"
             )
 
         return matching_doctors
@@ -46,10 +45,9 @@ async def get_doctors_by_department(
         )
 
 
-@router.get("/deptt", response_model=DepartmentResponse)
+@router.get("/department", response_model=DepartmentResponse)
 async def get_departments(
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db)
 ):
     try:
         # Get all doctors and extract unique specialities
@@ -78,8 +76,7 @@ async def get_departments(
 @router.get("/{doctor_id}", response_model=DoctorResponse)
 async def get_doctor_by_id(
     doctor_id: int,
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
+    db: Session = Depends(get_db)
 ):
     try:
         doctor = db.query(DbDoctor).filter(DbDoctor.id == doctor_id).first()
@@ -99,10 +96,7 @@ async def get_doctor_by_id(
 
 
 @router.get("", response_model=List[DoctorResponse])
-async def get_all_doctors(
-    db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme)
-):
+async def get_all_doctors(db: Session = Depends(get_db)):
     try:
         doctors = db.query(DbDoctor).all()
         return doctors
