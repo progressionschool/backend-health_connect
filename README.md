@@ -141,15 +141,6 @@ To contribute to this project:
 4. Push to the branch
 5. Create a Pull Request
 
-## Why UV?
-
-UV offers several advantages over traditional pip:
-
-- 🚀 **Faster Installation**: Up to 10-100x faster than pip
-- 🔒 **Reliable Builds**: Deterministic builds across different machines
-- 💻 **Cross-Platform**: Works on Windows, macOS, and Linux
-- 🔄 **Cache Optimization**: Smart caching for faster subsequent installs
-- 🛡️ **Security**: Built-in security features and checks
 
 
 
