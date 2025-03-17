@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 from database import get_db
 from models import DbUser
 from schemas.user import UserCreate
@@ -23,6 +23,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 # Temporary storage for unverified users
 unverified_users: Dict[str, dict] = {}
 
+# OTP expiration time in minutes
+OTP_EXPIRY_MINUTES = 5
+
 
 class VerifyEmail(BaseModel):
     email: str
@@ -36,6 +39,12 @@ def authenticate_user(db: Session, username: str, password: str):
     if not verify_password(password, user.hashed_password):
         return False
     return user
+
+
+def is_otp_expired(timestamp: datetime) -> bool:
+    """Check if OTP has expired based on the timestamp"""
+    now = datetime.now(timezone.utc)
+    return (now - timestamp).total_seconds() > (OTP_EXPIRY_MINUTES * 60)
 
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
@@ -56,21 +65,27 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
 
     # Check if email exists in unverified users
     if user.email in unverified_users:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered but not verified. Please check your email for verification code."
-        )
+        user_data = unverified_users[user.email]
+        # If OTP is expired, allow new registration
+        if is_otp_expired(user_data["timestamp"]):
+            unverified_users.pop(user.email)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered but not verified. Please check your email for verification code. If you haven't received the code or it has expired, please register again."
+            )
 
     # Generate OTP
     otp = generate_otp()
 
-    # Store user data temporarily
+    # Store user data temporarily with timestamp
     unverified_users[user.email] = {
         "name": user.name,
         "username": user.username,
         "email": user.email,
         "password": user.password,
-        "verification_code": otp
+        "verification_code": otp,
+        "timestamp": datetime.now(timezone.utc)
     }
 
     # Send verification email
@@ -80,10 +95,12 @@ async def signup(user: UserCreate, db: Session = Depends(get_db)):
         unverified_users.pop(user.email, None)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send verification email"
+            detail="Failed to send verification email. Please try registering again."
         )
 
-    return {"message": "Signup successful. Please check your email for verification code."}
+    return {
+        "message": "Signup successful! Please check your email for verification code. If you don't receive the code or it expires, please register again."
+    }
 
 
 @router.post("/verify-email", status_code=status.HTTP_200_OK)
@@ -92,10 +109,18 @@ async def verify_email(verify_data: VerifyEmail, db: Session = Depends(get_db)):
     if verify_data.email not in unverified_users:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found or already verified"
+            detail="User not found or already verified. Please register again if you haven't completed the verification process."
         )
 
     user_data = unverified_users[verify_data.email]
+
+    # Check if OTP has expired
+    if is_otp_expired(user_data["timestamp"]):
+        unverified_users.pop(verify_data.email)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP has expired. Please register again to receive a new verification code."
+        )
 
     if user_data["verification_code"] != verify_data.verification_code:
         raise HTTPException(
