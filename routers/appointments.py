@@ -7,6 +7,7 @@ from models.doctor import DbDoctor
 from schemas.appointment import AppointmentCreate, Appointment, AppointmentWithDoctor
 from utils.token_utils import get_current_user
 from routers.auth import oauth2_scheme
+from utils.email_utils import send_appointment_confirmation
 
 router = APIRouter(
     prefix="/appointments",
@@ -14,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=Appointment)
+@router.post("/", response_model=Appointment)
 async def create_appointment(
     request: AppointmentCreate,
     db: Session = Depends(get_db),
@@ -50,6 +51,38 @@ async def create_appointment(
         db.add(new_appointment)
         db.commit()
         db.refresh(new_appointment)
+
+        # Get doctor details for email
+        doctor = db.query(DbDoctor).filter(
+            DbDoctor.id == request.doctor_id).first()
+        if not doctor:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Doctor not found"
+            )
+
+    
+        doctor_details = {
+            "speciality": doctor.speciality['title'],
+            "address": doctor.address['line1']
+        }
+        
+
+        # Send confirmation email
+        if send_appointment_confirmation(
+            user_email=current_user.email,
+            user_name=current_user.name,
+            doctor_name=doctor.name,
+            date_time=request.date_time,
+            doctor_details=doctor_details
+        ):
+            print("Email sent successfully")
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to send email"
+            )
+
         return new_appointment
 
     except Exception as e:
