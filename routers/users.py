@@ -4,6 +4,7 @@ from database import get_db
 from models import DbUser, DbDoctor
 from schemas.user import UserWithAppointments
 from schemas.appointment import AppointmentDetail
+from utils.token_utils import get_current_user
 from routers.auth import oauth2_scheme
 
 
@@ -13,24 +14,18 @@ router = APIRouter(
 )
 
 
-@router.get("/{user_id}", response_model=UserWithAppointments)
-async def get_user_by_id(
-    user_id: int,
+@router.get("/profile", response_model=UserWithAppointments)
+async def get_user_profile(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)
 ):
-    try:
-        # Get user with appointments
-        user = db.query(DbUser).filter(DbUser.id == user_id).first()
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User with id {user_id} not found"
-            )
+    # Get current user
+    current_user = await get_current_user(token, db)
 
+    try:
         # Get appointments with doctor details
         appointments = []
-        for appt in user.appointments:
+        for appt in current_user.appointments:
             doctor = db.query(DbDoctor).filter(
                 DbDoctor.id == appt.doctor_id).first()
             if doctor:
@@ -50,10 +45,10 @@ async def get_user_by_id(
 
         # Create response
         response = UserWithAppointments(
-            id=user.id,
-            name=user.name,
-            username=user.username,
-            email=user.email,
+            id=current_user.id,
+            name=current_user.name,
+            username=current_user.username,
+            email=current_user.email,
             appointments=appointments
         )
 
@@ -64,5 +59,5 @@ async def get_user_by_id(
             raise e
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch user: {str(e)}"
+            detail=f"Failed to fetch user profile: {str(e)}"
         )

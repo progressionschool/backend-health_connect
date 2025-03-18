@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, JSON
+from sqlalchemy.orm import relationship
 from database import Base
 
 
@@ -15,3 +16,6 @@ class DbDoctor(Base):
     fees = Column(Integer, nullable=False)
     image = Column(String, nullable=True)
     speciality = Column(JSON, nullable=False)
+
+    # Relationships
+    appointments = relationship("DbAppointment", back_populates="doctor")
