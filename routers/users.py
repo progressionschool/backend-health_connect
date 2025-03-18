@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from database import get_db
-from models import DbUser, DbDoctor
+from models import DbDoctor
 from schemas.user import UserWithAppointments
 from schemas.appointment import AppointmentDetail
 from utils.token_utils import get_current_user

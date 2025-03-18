@@ -4,7 +4,6 @@ from typing import List
 from database import get_db
 from models.appointment import DbAppointment
 from models.doctor import DbDoctor
-from models.user import DbUser
 from schemas.appointment import AppointmentCreate, Appointment, AppointmentWithDoctor
 from utils.token_utils import get_current_user
 from routers.auth import oauth2_scheme
